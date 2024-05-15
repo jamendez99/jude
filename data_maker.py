@@ -56,26 +56,51 @@ def rolling_stats(data, windows):
 
 
 def histograms(data, windows=None, bins='auto'):
+    """ Generate histogram(s) of the given data.
+
+    Args:
+        data (np.array): an array-like with the data to be
+            binned and histogramified.
+        windows (list(int)): an optional list of windows to create a rolling
+            histogram. If None, then a single histogram with the specified
+            bins will be generated. If a list of windows is provided,
+            then for each window size, a rolling histogram is generated with
+            the specified bins. In this case, bins cannot be auto, since all
+            the histograms must have a shared, fixed set of bins.
+        bins (str, or list, or int): this argument is passed directly to
+            np.histogram. If windows is not None, then bins must be a list
+            of scalars corresponding to the fixed bins that will be used
+            for the histogram. This way, we guarantee that the rolloing
+            histogram makes sense. If bins were an integer or 'auto', then
+            each histogram would have different bins, making it impossible to
+            compare the different histograms.
+    """
+    data = data
     if windows is None:
         hist, b = np.histogram(data, bins=bins, density=True)
         return {'bins': b, 'hist': hist}
     else:
-        pass  # WIP
         assert not isinstance(bins, str), \
             'Cannot make rolling histogram with auto generated bins.'
         assert hasattr(bins, "__len__"), \
             '"bins" must be a sequence of scalars.'
         res = dict()
         for window in windows:
-            hist, b = np.histogram(data, bins=bins, density=True)
-            res[window] = {'bins': b, 'hist': hist}
+            win_data = np.lib.stride_tricks.sliding_window_view(data, window)
+            size = win_data.shape[0]
+            hists = [None] * size
+            for i in range(len(hists)):
+                hists[i], _ = np.histogram(win_data[i], bins=bins, density=True)
+            res[window] = {'bins': bins, 'hist': hists}
         return res
 
 
-def gen_stats(data, windows=[2], calcs=CALCS):
+def gen_stats(data, rs_windows=[2], hi_windows=None, bins='auto', calcs=CALCS):
     stats = dict()
     if 'bs' in calcs:
         stats['bs'] = basic_stats(data)
     if 'rs' in calcs:
-        stats['rs'] = rolling_stats(data, windows)
+        stats['rs'] = rolling_stats(data, rs_windows)
+    if 'hi' in calcs:
+        stats['hi'] = histograms(data, windows=hi_windows, bins=bins)
     return stats
