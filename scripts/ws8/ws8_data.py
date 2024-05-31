@@ -3,10 +3,10 @@ import pandas as pd
 import pickle
 import numpy as np
 from config import LTA_PATH, OUT_PATH, HEADER, T_COL, S_COL
-from config import S_MIN, S_MAX, RS_WINDOWS
+from config import S_MIN, S_MAX, RS_WINDOWS, DATA_START, DATA_END
 
 
-def get_time_and_signal(lta, header, t_col, s_col, s_min, s_max):
+def get_time_and_signal(lta, header, t_col, s_col, s_min, s_max, d_start, d_stop):
     """ Method to get time and one signal from an lta file.
 
     Args:
@@ -30,12 +30,12 @@ def get_time_and_signal(lta, header, t_col, s_col, s_min, s_max):
     df = df[df[s_col] < s_max]
     time = df[t_col].values
     sig = df[s_col].values
-    return time, sig
+    return time[d_start: d_stop], sig[d_start: d_stop]
 
 
 if __name__ == '__main__':
     time, wlns = get_time_and_signal(
-        LTA_PATH, HEADER, T_COL, S_COL, S_MIN, S_MAX)
+        LTA_PATH, HEADER, T_COL, S_COL, S_MIN, S_MAX, DATA_START, DATA_END)
     dt = np.mean(np.diff(time)) / 1000  # Mean difference between points (s)
     windows = np.array(RS_WINDOWS)
     windows = (windows / dt).astype(int)
