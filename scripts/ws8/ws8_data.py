@@ -1,4 +1,4 @@
-from jude.data_maker import gen_stats
+from jude.stat_maker import gen_stats
 import pandas as pd
 import pickle
 import numpy as np
