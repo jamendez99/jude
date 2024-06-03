@@ -77,7 +77,7 @@ def histograms(data, windows=None, bins='auto'):
     """
     data = data
     if windows is None:
-        hist, b = np.histogram(data, bins=bins, density=True)
+        hist, b = np.histogram(data, bins=bins, density=False)
         return {'bins': b, 'hist': hist}
     else:
         assert not isinstance(bins, str), \
@@ -90,7 +90,7 @@ def histograms(data, windows=None, bins='auto'):
             size = win_data.shape[0]
             hists = [None] * size
             for i in range(len(hists)):
-                hists[i], _ = np.histogram(win_data[i], bins=bins, density=True)
+                hists[i], _ = np.histogram(win_data[i], bins=bins, density=False)
             res[window] = {'bins': bins, 'hist': hists}
         return res
 
